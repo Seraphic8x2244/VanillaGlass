@@ -12,7 +12,7 @@ namespace VanillaGlass
     {
         public const string ModGUID = "revenga.valheim.vanillaglass";
         public const string ModName = "Vanilla Glass";
-        public const string ModVersion = "0.0.4";
+        public const string ModVersion = "0.0.5";
 
         internal static Plugin Instance;
 
@@ -85,17 +85,31 @@ namespace VanillaGlass
             Transform top2 = piece.transform.Find("$hud_snappoint_top 2");
             Transform bottom2 = piece.transform.Find("$hud_snappoint_bottom 2");
 
+            float bottom = -0.5f;
+            float top = height - 0.5f;
+
+            if (height <= 1f)
+            {
+                bottom = 0f;
+                top = 1f;
+            }
+            else
+            {
+                bottom = -0.5f;
+                top = height - 0.5f;
+            }
+
             if (top1 != null)
-                top1.localPosition = new Vector3(left, height, 0f);
+                top1.localPosition = new Vector3(left, top, 0f);
 
             if (bottom1 != null)
-                bottom1.localPosition = new Vector3(left, 0f, 0f);
+                bottom1.localPosition = new Vector3(left, bottom, 0f);
 
             if (top2 != null)
-                top2.localPosition = new Vector3(right, height, 0f);
+                top2.localPosition = new Vector3(right, top, 0f);
 
             if (bottom2 != null)
-                bottom2.localPosition = new Vector3(right, 0f, 0f);
+                bottom2.localPosition = new Vector3(right, bottom, 0f);
 
             Logger.LogInfo($"Adjusted snap points on {piece.name}");
         }
