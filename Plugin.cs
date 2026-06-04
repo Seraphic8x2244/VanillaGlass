@@ -4,6 +4,7 @@ using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using UnityEngine;
+
 namespace VanillaGlass
 {
     [BepInPlugin(ModGUID, ModName, ModVersion)]
@@ -11,7 +12,7 @@ namespace VanillaGlass
     {
         public const string ModGUID = "revenga.valheim.vanillaglass";
         public const string ModName = "Vanilla Glass";
-        public const string ModVersion = "0.0.1";
+        public const string ModVersion = "0.0.3";
 
         internal static Plugin Instance;
 
@@ -38,21 +39,57 @@ namespace VanillaGlass
             harmony?.UnpatchSelf();
         }
 
-        private void OnVanillaPrefabsAvailable()
+        private void ModifyGlassAppearance(GameObject piece, float width, float height)
         {
-            Logger.LogInfo("Vanilla prefabs are available.");
+            Transform high = piece.transform.Find("New/High");
 
-            Logger.LogInfo($"Hammer = {PieceTables.Hammer}");
+            if (high == null)
+            {
+                Logger.LogWarning($"High object not found on {piece.name}");
+                return;
+            }
 
+            // Scale piece
+            high.localScale = new Vector3(width, height, 0.15f);
+
+            MeshRenderer renderer = high.GetComponent<MeshRenderer>();
+
+            if (renderer == null)
+            {
+                Logger.LogWarning($"MeshRenderer not found on {piece.name}");
+                return;
+            }
+
+            renderer.shadowCastingMode =
+                UnityEngine.Rendering.ShadowCastingMode.Off;
+
+            Material mat = renderer.material;
+
+            Color c = mat.color;
+            c.a = 0.15f;
+            mat.color = c;
+
+            // Maintain texture density
+            mat.mainTextureScale = new Vector2(3f * width, 3f * height);
+
+            Logger.LogInfo($"Applied glass appearance to {piece.name}");
+        }
+
+        private void RegisterGlassPiece(
+            string internalName,
+            string displayName,
+            float width,
+            float height)
+        {
             PieceConfig pieceConfig = new PieceConfig
             {
-                Name = "Glass Window 1x1",
+                Name = displayName,
                 PieceTable = PieceTables.Hammer,
                 Category = "BuildingStonecutter"
             };
 
             CustomPiece customPiece = new CustomPiece(
-                "piece_glass_window_1x1",
+                internalName,
                 "crystal_wall_1x1",
                 pieceConfig);
 
@@ -60,61 +97,54 @@ namespace VanillaGlass
 
             if (glassWindow == null)
             {
-                Logger.LogError("Failed to clone crystal_wall_1x1");
+                Logger.LogError($"Failed to clone crystal_wall_1x1 for {displayName}");
                 return;
             }
 
-            Logger.LogInfo($"Cloned prefab: {glassWindow.name}");
-
-            // Modify High LOD visual appearance
-            Transform high = glassWindow.transform.Find("New/High");
-
-            if (high != null)
-            {
-                // Reduce thickness
-                high.localScale = new Vector3(1f, 1f, 0.15f);
-
-                MeshRenderer renderer = high.GetComponent<MeshRenderer>();
-
-                if (renderer != null)
-                {
-                    // Disable shadows
-                    renderer.shadowCastingMode =
-                        UnityEngine.Rendering.ShadowCastingMode.Off;
-
-                    Material mat = renderer.material;
-
-                    // Reduce opacity
-                    Color c = mat.color;
-                    c.a = 0.15f;
-                    mat.color = c;
-
-                    // Reduce texture repetition
-                    mat.mainTextureScale = new Vector2(3f, 3f);
-
-                    Logger.LogInfo("Modified High glass renderer");
-                }
-                else
-                {
-                    Logger.LogWarning("High MeshRenderer not found");
-                }
-            }
-            else
-            {
-                Logger.LogWarning("High object not found");
-            }
+            ModifyGlassAppearance(glassWindow, width, height);
 
             Piece piece = glassWindow.GetComponent<Piece>();
 
             if (piece != null)
             {
-                piece.m_name = "Glass Window 1x1";
+                piece.m_name = displayName;
                 piece.m_description = "";
             }
 
             PieceManager.Instance.AddPiece(customPiece);
 
-            Logger.LogInfo("Registered Glass Window 1x1");
+            Logger.LogInfo($"Registered {displayName}");
+        }
+
+        private void OnVanillaPrefabsAvailable()
+        {
+            Logger.LogInfo("Vanilla prefabs are available.");
+
+            Logger.LogInfo($"Hammer = {PieceTables.Hammer}");
+
+            RegisterGlassPiece(
+                "piece_glass_window_1x1",
+                "Glass Window 1x1",
+                1f,
+                1f);
+
+            RegisterGlassPiece(
+                "piece_glass_window_2x1",
+                "Glass Window 2x1",
+                2f,
+                1f);
+
+            RegisterGlassPiece(
+                "piece_glass_window_1x2",
+                "Glass Window 1x2",
+                1f,
+                2f);
+
+            RegisterGlassPiece(
+                "piece_glass_window_2x2",
+                "Glass Window 2x2",
+                2f,
+                2f);
         }
     }
 }
