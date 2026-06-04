@@ -12,7 +12,7 @@ namespace VanillaGlass
     {
         public const string ModGUID = "revenga.valheim.vanillaglass";
         public const string ModName = "Vanilla Glass";
-        public const string ModVersion = "0.0.3";
+        public const string ModVersion = "0.0.4";
 
         internal static Plugin Instance;
 
@@ -49,7 +49,7 @@ namespace VanillaGlass
                 return;
             }
 
-            // Scale piece
+            // Scale mesh and collider
             high.localScale = new Vector3(width, height, 0.15f);
 
             MeshRenderer renderer = high.GetComponent<MeshRenderer>();
@@ -73,6 +73,31 @@ namespace VanillaGlass
             mat.mainTextureScale = new Vector2(3f * width, 3f * height);
 
             Logger.LogInfo($"Applied glass appearance to {piece.name}");
+        }
+
+        private void AdjustSnapPoints(GameObject piece, float width, float height)
+        {
+            float left = -width / 2f;
+            float right = width / 2f;
+
+            Transform top1 = piece.transform.Find("$hud_snappoint_top 1");
+            Transform bottom1 = piece.transform.Find("$hud_snappoint_bottom 1");
+            Transform top2 = piece.transform.Find("$hud_snappoint_top 2");
+            Transform bottom2 = piece.transform.Find("$hud_snappoint_bottom 2");
+
+            if (top1 != null)
+                top1.localPosition = new Vector3(left, height, 0f);
+
+            if (bottom1 != null)
+                bottom1.localPosition = new Vector3(left, 0f, 0f);
+
+            if (top2 != null)
+                top2.localPosition = new Vector3(right, height, 0f);
+
+            if (bottom2 != null)
+                bottom2.localPosition = new Vector3(right, 0f, 0f);
+
+            Logger.LogInfo($"Adjusted snap points on {piece.name}");
         }
 
         private void RegisterGlassPiece(
@@ -102,6 +127,7 @@ namespace VanillaGlass
             }
 
             ModifyGlassAppearance(glassWindow, width, height);
+            AdjustSnapPoints(glassWindow, width, height);
 
             Piece piece = glassWindow.GetComponent<Piece>();
 
