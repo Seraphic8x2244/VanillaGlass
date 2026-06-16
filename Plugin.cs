@@ -127,6 +127,10 @@ namespace VanillaGlass
                 Category = "BuildingStonecutter"
             };
 
+            pieceConfig.AddRequirement(
+                "Crystal",
+                Mathf.RoundToInt(width * height),
+                true);
             CustomPiece customPiece = new CustomPiece(
                 internalName,
                 "crystal_wall_1x1",
