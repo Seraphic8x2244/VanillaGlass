@@ -112,9 +112,15 @@ namespace VanillaGlass
 
             // Roof/ceiling variants need dedicated roof-style snap coordinates.
             // Do not rotate wall/window snap points.
-            if (!Mathf.Approximately(pitchDegrees, 0f))
+            if (Mathf.Approximately(pitchDegrees, -63.435f))
             {
                 AdjustRoof26SnapPoints(piece, width, top1, bottom1, top2, bottom2);
+                return;
+            }
+
+            if (Mathf.Approximately(pitchDegrees, -45f))
+            {
+                AdjustRoof45SnapPoints(piece, width, top1, bottom1, top2, bottom2);
                 return;
             }
 
@@ -158,44 +164,81 @@ namespace VanillaGlass
             Transform top2,
             Transform bottom2)
         {
+            AdjustRoofSnapPoints(
+                piece,
+                width,
+                top1,
+                bottom1,
+                top2,
+                bottom2,
+                1f,
+                0f,
+                "26°");
+        }
+
+        private void AdjustRoof45SnapPoints(
+            GameObject piece,
+            float width,
+            Transform top1,
+            Transform bottom1,
+            Transform top2,
+            Transform bottom2)
+        {
+            AdjustRoofSnapPoints(
+                piece,
+                width,
+                top1,
+                bottom1,
+                top2,
+                bottom2,
+                1.5f,
+                -0.5f,
+                "45°");
+        }
+
+        private void AdjustRoofSnapPoints(
+            GameObject piece,
+            float width,
+            Transform top1,
+            Transform bottom1,
+            Transform top2,
+            Transform bottom2,
+            float topY,
+            float bottomY,
+            string roofLabel)
+        {
             float right = width / 2f;
             float left = -width / 2f;
 
-            // Based on vanilla wood_roof 26° snap points:
-            // top1     1  1 -1
-            // bottom1  1  0  1
-            // top2    -1  1 -1
-            // bottom2 -1  0  1
-            //
-            // Vanilla wood_roof covers a 2x2 hole.
-            // This glass roof test covers a 1x2 hole, so X is halved.
-            // Y/Z remain the same because the roof still has 2 run and 1 rise.
+            // Vanilla roof pieces cover a 2x2 hole.
+            // Our glass roof pieces cover a 1x2 hole, so X is halved.
+            // Y/Z are copied from the matching vanilla roof snap layout.
 
             if (top1 != null)
             {
-                top1.localPosition = new Vector3(right, 1f, -1f);
+                top1.localPosition = new Vector3(right, topY, -1f);
                 top1.localRotation = Quaternion.identity;
             }
 
             if (bottom1 != null)
             {
-                bottom1.localPosition = new Vector3(right, 0f, 1f);
+                bottom1.localPosition = new Vector3(right, bottomY, 1f);
                 bottom1.localRotation = Quaternion.identity;
             }
 
             if (top2 != null)
             {
-                top2.localPosition = new Vector3(left, 1f, -1f);
+                top2.localPosition = new Vector3(left, topY, -1f);
                 top2.localRotation = Quaternion.identity;
             }
 
             if (bottom2 != null)
             {
-                bottom2.localPosition = new Vector3(left, 0f, 1f);
+                bottom2.localPosition = new Vector3(left, bottomY, 1f);
                 bottom2.localRotation = Quaternion.identity;
             }
 
-            Logger.LogInfo($"Adjusted roof 26° snap points on {piece.name}");
+            Logger.LogInfo($"Adjusted roof {roofLabel} snap points on {piece.name}");
         }
 
         private Sprite LoadEmbeddedIcon(string resourceName)
@@ -324,6 +367,14 @@ namespace VanillaGlass
                 1f,
                 Mathf.Sqrt(5f),
                 -63.435f);
+
+            RegisterGlassPiece(
+                "piece_glass_roof_45_1x2",
+                "Glass Roof 45° 1x2",
+                "VanillaGlass.Assets.glass_window_1x2.png",
+                1f,
+                Mathf.Sqrt(8f),
+                -45f);
         }
     }
 }
