@@ -1,9 +1,10 @@
 {
-  "name": "ValheimModTemplate",
-  "version_number": "1.0.0",
+  "name": "VanillaGlass",
+  "version_number": "0.0.7",
   "website_url": "",
-  "description": "Template project for Valheim mods.",
+  "description": "Adds vanilla-style glass building pieces made from crystal.",
   "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.2202"
+    "denikson-BepInExPack_Valheim-5.4.2202",
+    "ValheimModding-Jotunn-2.27.0"
   ]
 }

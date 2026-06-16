@@ -21,6 +21,13 @@ namespace VanillaGlass
 
         private Harmony harmony;
 
+        private enum GlassPieceType
+        {
+            Window,
+            Roof26,
+            Roof45
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -42,8 +49,22 @@ namespace VanillaGlass
             harmony?.UnpatchSelf();
         }
 
-        private void ModifyGlassAppearance(GameObject piece, float width, float height, float pitchDegrees)
+        private float GetPitchDegrees(GlassPieceType pieceType)
         {
+            switch (pieceType)
+            {
+                case GlassPieceType.Roof26:
+                    return -63.435f;
+                case GlassPieceType.Roof45:
+                    return -45f;
+                default:
+                    return 0f;
+            }
+        }
+
+        private void ModifyGlassAppearance(GameObject piece, float width, float height, GlassPieceType pieceType)
+        {
+            float pitchDegrees = GetPitchDegrees(pieceType);
             Transform newRoot = piece.transform.Find("New");
             Transform high = piece.transform.Find("New/High");
             Transform low = piece.transform.Find("New/Low");
@@ -103,7 +124,7 @@ namespace VanillaGlass
             Logger.LogInfo($"Applied glass appearance to {piece.name}");
         }
 
-        private void AdjustSnapPoints(GameObject piece, float width, float height, float pitchDegrees)
+        private void AdjustSnapPoints(GameObject piece, float width, float height, GlassPieceType pieceType)
         {
             Transform top1 = piece.transform.Find("$hud_snappoint_top 1");
             Transform bottom1 = piece.transform.Find("$hud_snappoint_bottom 1");
@@ -112,16 +133,14 @@ namespace VanillaGlass
 
             // Roof/ceiling variants need dedicated roof-style snap coordinates.
             // Do not rotate wall/window snap points.
-            if (Mathf.Approximately(pitchDegrees, -63.435f))
+            switch (pieceType)
             {
-                AdjustRoof26SnapPoints(piece, width, top1, bottom1, top2, bottom2);
-                return;
-            }
-
-            if (Mathf.Approximately(pitchDegrees, -45f))
-            {
-                AdjustRoof45SnapPoints(piece, width, top1, bottom1, top2, bottom2);
-                return;
+                case GlassPieceType.Roof26:
+                    AdjustRoof26SnapPoints(piece, width, top1, bottom1, top2, bottom2);
+                    return;
+                case GlassPieceType.Roof45:
+                    AdjustRoof45SnapPoints(piece, width, top1, bottom1, top2, bottom2);
+                    return;
             }
 
             float left = -width / 2f;
@@ -283,7 +302,7 @@ namespace VanillaGlass
             string iconResource,
             float width,
             float height,
-            float pitchDegrees = 0f)
+            GlassPieceType pieceType = GlassPieceType.Window)
         {
             PieceConfig pieceConfig = new PieceConfig
             {
@@ -310,8 +329,8 @@ namespace VanillaGlass
                 return;
             }
 
-            ModifyGlassAppearance(glassWindow, width, height, pitchDegrees);
-            AdjustSnapPoints(glassWindow, width, height, pitchDegrees);
+            ModifyGlassAppearance(glassWindow, width, height, pieceType);
+            AdjustSnapPoints(glassWindow, width, height, pieceType);
 
             Piece piece = glassWindow.GetComponent<Piece>();
 
@@ -366,7 +385,7 @@ namespace VanillaGlass
                 "VanillaGlass.Assets.glass_window_1x2.png",
                 1f,
                 Mathf.Sqrt(5f),
-                -63.435f);
+                GlassPieceType.Roof26);
 
             RegisterGlassPiece(
                 "piece_glass_roof_45_1x2",
@@ -374,7 +393,7 @@ namespace VanillaGlass
                 "VanillaGlass.Assets.glass_window_1x2.png",
                 1f,
                 Mathf.Sqrt(8f),
-                -45f);
+                GlassPieceType.Roof45);
         }
     }
 }
