@@ -15,7 +15,7 @@ namespace VanillaGlass
     {
         public const string ModGUID = "revenga.valheim.vanillaglass";
         public const string ModName = "Vanilla Glass";
-        public const string ModVersion = "0.0.6";
+        public const string ModVersion = "0.0.7";
 
         internal static Plugin Instance;
 
@@ -42,8 +42,9 @@ namespace VanillaGlass
             harmony?.UnpatchSelf();
         }
 
-        private void ModifyGlassAppearance(GameObject piece, float width, float height)
+        private void ModifyGlassAppearance(GameObject piece, float width, float height, float pitchDegrees)
         {
+            Transform newRoot = piece.transform.Find("New");
             Transform high = piece.transform.Find("New/High");
             Transform low = piece.transform.Find("New/Low");
 
@@ -55,6 +56,13 @@ namespace VanillaGlass
 
             // Scale mesh and collider
             high.localScale = new Vector3(width, height, 0.15f);
+
+            // Rotate visual geometry for roof/ceiling variants
+            if (newRoot != null && !Mathf.Approximately(pitchDegrees, 0f))
+            {
+                newRoot.localRotation = Quaternion.Euler(pitchDegrees, 0f, 0f);
+                Logger.LogInfo($"Rotated visual geometry on {piece.name} by {pitchDegrees} degrees");
+            }
 
             MeshRenderer renderer = high.GetComponent<MeshRenderer>();
 
@@ -95,15 +103,23 @@ namespace VanillaGlass
             Logger.LogInfo($"Applied glass appearance to {piece.name}");
         }
 
-        private void AdjustSnapPoints(GameObject piece, float width, float height)
+        private void AdjustSnapPoints(GameObject piece, float width, float height, float pitchDegrees)
         {
-            float left = -width / 2f;
-            float right = width / 2f;
-
             Transform top1 = piece.transform.Find("$hud_snappoint_top 1");
             Transform bottom1 = piece.transform.Find("$hud_snappoint_bottom 1");
             Transform top2 = piece.transform.Find("$hud_snappoint_top 2");
             Transform bottom2 = piece.transform.Find("$hud_snappoint_bottom 2");
+
+            // Roof/ceiling variants need dedicated roof-style snap coordinates.
+            // Do not rotate wall/window snap points.
+            if (!Mathf.Approximately(pitchDegrees, 0f))
+            {
+                AdjustRoof26SnapPoints(piece, width, top1, bottom1, top2, bottom2);
+                return;
+            }
+
+            float left = -width / 2f;
+            float right = width / 2f;
 
             float bottom;
             float top;
@@ -131,7 +147,55 @@ namespace VanillaGlass
             if (bottom2 != null)
                 bottom2.localPosition = new Vector3(right, bottom, 0f);
 
-            Logger.LogInfo($"Adjusted snap points on {piece.name}");
+            Logger.LogInfo($"Adjusted window snap points on {piece.name}");
+        }
+
+        private void AdjustRoof26SnapPoints(
+            GameObject piece,
+            float width,
+            Transform top1,
+            Transform bottom1,
+            Transform top2,
+            Transform bottom2)
+        {
+            float right = width / 2f;
+            float left = -width / 2f;
+
+            // Based on vanilla wood_roof 26° snap points:
+            // top1     1  1 -1
+            // bottom1  1  0  1
+            // top2    -1  1 -1
+            // bottom2 -1  0  1
+            //
+            // Vanilla wood_roof covers a 2x2 hole.
+            // This glass roof test covers a 1x2 hole, so X is halved.
+            // Y/Z remain the same because the roof still has 2 run and 1 rise.
+
+            if (top1 != null)
+            {
+                top1.localPosition = new Vector3(right, 1f, -1f);
+                top1.localRotation = Quaternion.identity;
+            }
+
+            if (bottom1 != null)
+            {
+                bottom1.localPosition = new Vector3(right, 0f, 1f);
+                bottom1.localRotation = Quaternion.identity;
+            }
+
+            if (top2 != null)
+            {
+                top2.localPosition = new Vector3(left, 1f, -1f);
+                top2.localRotation = Quaternion.identity;
+            }
+
+            if (bottom2 != null)
+            {
+                bottom2.localPosition = new Vector3(left, 0f, 1f);
+                bottom2.localRotation = Quaternion.identity;
+            }
+
+            Logger.LogInfo($"Adjusted roof 26° snap points on {piece.name}");
         }
 
         private Sprite LoadEmbeddedIcon(string resourceName)
@@ -175,7 +239,8 @@ namespace VanillaGlass
             string displayName,
             string iconResource,
             float width,
-            float height)
+            float height,
+            float pitchDegrees = 0f)
         {
             PieceConfig pieceConfig = new PieceConfig
             {
@@ -202,8 +267,8 @@ namespace VanillaGlass
                 return;
             }
 
-            ModifyGlassAppearance(glassWindow, width, height);
-            AdjustSnapPoints(glassWindow, width, height);
+            ModifyGlassAppearance(glassWindow, width, height, pitchDegrees);
+            AdjustSnapPoints(glassWindow, width, height, pitchDegrees);
 
             Piece piece = glassWindow.GetComponent<Piece>();
 
@@ -251,6 +316,14 @@ namespace VanillaGlass
                 "VanillaGlass.Assets.glass_window_2x2.png",
                 2f,
                 2f);
+
+            RegisterGlassPiece(
+                "piece_glass_roof_26_1x2",
+                "Glass Roof 26° 1x2",
+                "VanillaGlass.Assets.glass_window_1x2.png",
+                1f,
+                Mathf.Sqrt(5f),
+                -63.435f);
         }
     }
 }
