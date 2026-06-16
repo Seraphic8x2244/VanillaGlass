@@ -63,16 +63,16 @@ namespace VanillaGlass
 
             if (low != null)
             {
-                MeshRenderer lowRenderer = low.GetComponent<MeshRenderer>();
+                MeshFilter lowMeshFilter = low.GetComponent<MeshFilter>();
 
-                if (lowRenderer != null)
+                if (lowMeshFilter != null)
                 {
-                    lowRenderer.enabled = false;
-                    Logger.LogInfo($"Disabled Low LOD renderer on {piece.name}");
+                    lowMeshFilter.sharedMesh = null;
+                    Logger.LogInfo($"Removed Low LOD mesh on {piece.name}");
                 }
                 else
                 {
-                    Logger.LogWarning($"Low LOD MeshRenderer not found on {piece.name}");
+                    Logger.LogWarning($"Low LOD MeshFilter not found on {piece.name}");
                 }
             }
 
