@@ -3,7 +3,10 @@ using HarmonyLib;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
+using Jotunn.Utils;
 using UnityEngine;
+using System.IO;
+using System.Reflection;
 
 namespace VanillaGlass
 {
@@ -12,7 +15,7 @@ namespace VanillaGlass
     {
         public const string ModGUID = "revenga.valheim.vanillaglass";
         public const string ModName = "Vanilla Glass";
-        public const string ModVersion = "0.0.5";
+        public const string ModVersion = "0.0.6";
 
         internal static Plugin Instance;
 
@@ -61,6 +64,7 @@ namespace VanillaGlass
                 return;
             }
 
+            // Remove Low LOD mesh so distant glass disappears instead of showing opaque crystal
             if (low != null)
             {
                 MeshFilter lowMeshFilter = low.GetComponent<MeshFilter>();
@@ -101,8 +105,8 @@ namespace VanillaGlass
             Transform top2 = piece.transform.Find("$hud_snappoint_top 2");
             Transform bottom2 = piece.transform.Find("$hud_snappoint_bottom 2");
 
-            float bottom = -0.5f;
-            float top = height - 0.5f;
+            float bottom;
+            float top;
 
             if (height <= 1f)
             {
@@ -130,9 +134,46 @@ namespace VanillaGlass
             Logger.LogInfo($"Adjusted snap points on {piece.name}");
         }
 
+        private Sprite LoadEmbeddedIcon(string resourceName)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream == null)
+                {
+                    Logger.LogError($"Could not find embedded icon: {resourceName}");
+                    return null;
+                }
+
+                byte[] data = new byte[stream.Length];
+                stream.Read(data, 0, data.Length);
+
+                Texture2D texture = AssetUtils.LoadImage(data);
+
+                if (texture == null)
+                {
+                    Logger.LogError($"Could not load embedded icon image: {resourceName}");
+                    return null;
+                }
+
+                texture.name = resourceName;
+
+                Sprite sprite = Sprite.Create(
+                    texture,
+                    new Rect(0f, 0f, texture.width, texture.height),
+                    new Vector2(0.5f, 0.5f));
+
+                sprite.name = resourceName;
+
+                return sprite;
+            }
+        }
+
         private void RegisterGlassPiece(
             string internalName,
             string displayName,
+            string iconResource,
             float width,
             float height)
         {
@@ -147,6 +188,7 @@ namespace VanillaGlass
                 "Crystal",
                 Mathf.RoundToInt(width * height),
                 true);
+
             CustomPiece customPiece = new CustomPiece(
                 internalName,
                 "crystal_wall_1x1",
@@ -169,6 +211,7 @@ namespace VanillaGlass
             {
                 piece.m_name = displayName;
                 piece.m_description = "";
+                piece.m_icon = LoadEmbeddedIcon(iconResource);
             }
 
             PieceManager.Instance.AddPiece(customPiece);
@@ -179,35 +222,33 @@ namespace VanillaGlass
         private void OnVanillaPrefabsAvailable()
         {
             Logger.LogInfo("Vanilla prefabs are available.");
-
             Logger.LogInfo($"Hammer = {PieceTables.Hammer}");
-
-            foreach (string resourceName in System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames())
-            {
-                Logger.LogInfo($"Embedded resource: {resourceName}");
-            }
 
             RegisterGlassPiece(
                 "piece_glass_window_1x1",
                 "Glass Window 1x1",
+                "VanillaGlass.Assets.glass_window_1x1.png",
                 1f,
                 1f);
 
             RegisterGlassPiece(
                 "piece_glass_window_2x1",
                 "Glass Window 2x1",
+                "VanillaGlass.Assets.glass_window_2x1.png",
                 2f,
                 1f);
 
             RegisterGlassPiece(
                 "piece_glass_window_1x2",
                 "Glass Window 1x2",
+                "VanillaGlass.Assets.glass_window_1x2.png",
                 1f,
                 2f);
 
             RegisterGlassPiece(
                 "piece_glass_window_2x2",
                 "Glass Window 2x2",
+                "VanillaGlass.Assets.glass_window_2x2.png",
                 2f,
                 2f);
         }
