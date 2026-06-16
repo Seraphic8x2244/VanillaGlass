@@ -42,6 +42,7 @@ namespace VanillaGlass
         private void ModifyGlassAppearance(GameObject piece, float width, float height)
         {
             Transform high = piece.transform.Find("New/High");
+            Transform low = piece.transform.Find("New/Low");
 
             if (high == null)
             {
@@ -58,6 +59,11 @@ namespace VanillaGlass
             {
                 Logger.LogWarning($"MeshRenderer not found on {piece.name}");
                 return;
+            }
+
+            if (low != null)
+            {
+                low.gameObject.SetActive(false);
             }
 
             renderer.shadowCastingMode =
