@@ -63,7 +63,17 @@ namespace VanillaGlass
 
             if (low != null)
             {
-                low.gameObject.SetActive(false);
+                MeshRenderer lowRenderer = low.GetComponent<MeshRenderer>();
+
+                if (lowRenderer != null)
+                {
+                    lowRenderer.enabled = false;
+                    Logger.LogInfo($"Disabled Low LOD renderer on {piece.name}");
+                }
+                else
+                {
+                    Logger.LogWarning($"Low LOD MeshRenderer not found on {piece.name}");
+                }
             }
 
             renderer.shadowCastingMode =
