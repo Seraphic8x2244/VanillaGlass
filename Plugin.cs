@@ -182,6 +182,11 @@ namespace VanillaGlass
 
             Logger.LogInfo($"Hammer = {PieceTables.Hammer}");
 
+            foreach (string resourceName in System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames())
+            {
+                Logger.LogInfo($"Embedded resource: {resourceName}");
+            }
+
             RegisterGlassPiece(
                 "piece_glass_window_1x1",
                 "Glass Window 1x1",
