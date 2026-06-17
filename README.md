@@ -1,71 +1,38 @@
 # Vanilla Glass
 
-Vanilla Glass is a lightweight Valheim building mod that adds simple glass
-building pieces made from crystal. The goal is to keep the pieces feeling close
-to vanilla Valheim while making windows, roofs, and skylights easier to build
-with.
+This is my first mod, and hopefully the first in a small series I plan to make with the help of AI. Why AI? I'm not a programmer or designer, so I've never had the skills to implement the ideas I have had for games for 25+ years. Now I can - but I will declare it clearly :)
 
-## Development Status
+## Features
 
-This mod is still in development. Piece names, recipes, icons, snap points, and
-visual tuning may change before the first full release.
+Vanilla Glass adds a very limited set of glass building pieces designed to fit naturally into Valheim's art style, progression and building system.
 
-The planned final release includes:
+You will be able to craft Glass at the Artisan Table using Crystal and Resin. This will allow you to build
 
-- Glass Window 1x2
-- Glass Roof 26 degrees
-- Glass Roof 45 degrees
-- Glass Skylight 90 degrees
+* Glass Window 1x2
+* Glass Roof 1x2 26°
+* Glass Roof 1x2 45°
+* Glass Skylight 1x2
 
-## Current Features
+* Vanilla-friendly glass building pieces
+* Custom icons
+* Roof, window and skylight variants
+* Integrated with Valheim's existing building progression
+* Structure behaviour much like Crystal Wall
 
-- Crystal-based glass building pieces
-- Transparent glass appearance using vanilla assets
-- Hammer build menu integration
-- Stonecutter building category integration
-- Custom build icons embedded in the plugin
-- Snap point adjustments for easier placement
+## Progression
+
+Glass is crafted at the Artisan Table from:
+
+* 1 Crystal
+* 1 Resin
+
+Each building piece requires Glass to construct. You must be in range of an artisan table to build/repair.
 
 ## Requirements
 
-- BepInExPack Valheim
-- Jotunn
+* BepInExPack Valheim
+* Jotunn
 
-## Installation
+## Philosophy
 
-Install with a mod manager such as r2modman or Thunderstore Mod Manager.
-
-For manual installation, place the compiled `VanillaGlass.dll` file in your
-Valheim BepInEx plugins folder:
-
-```text
-BepInEx/plugins/VanillaGlass/
-```
-
-## Usage
-
-After installing the mod, launch Valheim and open the hammer build menu. The
-glass pieces are available in the building category used by stonecutter pieces.
-
-Each piece uses crystal as its build material.
-
-## Compatibility
-
-Vanilla Glass is intended to be a small building-piece mod and should be
-compatible with most Valheim mod lists. Multiplayer servers and clients should
-all have the mod installed.
-
-## Known Limitations
-
-- The mod is still being tuned for release.
-- Some icons, recipes, and snap behavior may change.
-- The final Thunderstore package metadata is not complete yet.
-
-## Changelog
-
-### 0.0.7
-
-- Added early glass window and roof piece registration.
-- Added transparent material adjustments.
-- Added embedded build icons.
-- Added roof snap point handling for angled glass pieces.
+The aim of Vanilla Glass is to feel like a natural extension of the vanilla game, providing cleaner and more versatile glass building options without adding new mechanics or complexity.

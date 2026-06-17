@@ -15,7 +15,9 @@ namespace VanillaGlass
     {
         public const string ModGUID = "revenga.valheim.vanillaglass";
         public const string ModName = "Vanilla Glass";
-        public const string ModVersion = "0.0.8";
+        public const string ModVersion = "0.0.9";
+
+        private const string GlassItemPrefabName = "VanillaGlass_Glass";
 
         internal static Plugin Instance;
 
@@ -292,12 +294,10 @@ namespace VanillaGlass
             float front = height / 2f;
             float back = -height / 2f;
 
-            // Test layout for a flat 1x2 horizontal skylight.
-            // The piece is rotated visually to horizontal, but snap points are placed
-            // directly as a flat 1x2 footprint.
+            // Flat 1x2 horizontal skylight.
             //
             // X = width left/right
-            // Y = flat height level
+            // Y = tuned flat height level
             // Z = 2m length front/back
 
             if (top1 != null)
@@ -325,6 +325,38 @@ namespace VanillaGlass
             }
 
             Logger.LogInfo($"Adjusted skylight snap points on {piece.name}");
+        }
+
+        private void RegisterGlassMaterial()
+        {
+            ItemConfig glassConfig = new ItemConfig
+            {
+                Name = "Glass",
+                Description = "Crystal honed smooth and sealed with resin.",
+                CraftingStation = CraftingStations.ArtisanTable,
+                Amount = 1
+            };
+
+            glassConfig.AddRequirement("Crystal", 1, 1);
+            glassConfig.AddRequirement("Resin", 1, 1);
+
+            CustomItem glassItem = new CustomItem(
+                GlassItemPrefabName,
+                "Crystal",
+                glassConfig);
+
+            ItemDrop itemDrop = glassItem.ItemPrefab.GetComponent<ItemDrop>();
+
+            if (itemDrop != null)
+            {
+                itemDrop.m_itemData.m_shared.m_icons = new Sprite[]
+                {
+        LoadEmbeddedIcon("VanillaGlass.Assets.glass.png")
+                };
+            }
+
+            ItemManager.Instance.AddItem(glassItem);
+            Logger.LogInfo("Registered Glass material");
         }
 
         private Sprite LoadEmbeddedIcon(string resourceName)
@@ -375,11 +407,12 @@ namespace VanillaGlass
             {
                 Name = displayName,
                 PieceTable = PieceTables.Hammer,
+                CraftingStation = CraftingStations.ArtisanTable,
                 Category = "BuildingStonecutter"
             };
 
             pieceConfig.AddRequirement(
-                "Crystal",
+                GlassItemPrefabName,
                 Mathf.RoundToInt(width * height),
                 true);
 
@@ -417,6 +450,8 @@ namespace VanillaGlass
         {
             Logger.LogInfo("Vanilla prefabs are available.");
             Logger.LogInfo($"Hammer = {PieceTables.Hammer}");
+
+            RegisterGlassMaterial();
 
             RegisterGlassPiece(
                 "piece_glass_window_1x2",
