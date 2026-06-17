@@ -19,6 +19,20 @@ namespace VanillaGlass
 
         private const string GlassItemPrefabName = "VanillaGlass_Glass";
 
+        private const float GlassAlpha = 0.15f;
+        private const float GlassThickness = 0.15f;
+        private const float GlassTextureScale = 3f;
+
+        private const float Roof26Pitch = -63.435f;
+        private const float Roof45Pitch = -45f;
+        private const float SkylightPitch = -90f;
+
+        private const float Roof26TopY = 1f;
+        private const float Roof26BottomY = 0f;
+        private const float Roof45TopY = 1.5f;
+        private const float Roof45BottomY = -0.5f;
+        private const float SkylightSnapY = 0.5f;
+
         internal static Plugin Instance;
 
         private Harmony harmony;
@@ -57,11 +71,11 @@ namespace VanillaGlass
             switch (pieceType)
             {
                 case GlassPieceType.Roof26:
-                    return -63.435f;
+                    return Roof26Pitch;
                 case GlassPieceType.Roof45:
-                    return -45f;
+                    return Roof45Pitch;
                 case GlassPieceType.Skylight:
-                    return -90f;
+                    return SkylightPitch;
                 default:
                     return 0f;
             }
@@ -80,10 +94,8 @@ namespace VanillaGlass
                 return;
             }
 
-            // Scale mesh and collider
-            high.localScale = new Vector3(width, height, 0.15f);
+            high.localScale = new Vector3(width, height, GlassThickness);
 
-            // Rotate visual geometry for roof/skylight variants
             if (newRoot != null && !Mathf.Approximately(pitchDegrees, 0f))
             {
                 newRoot.localRotation = Quaternion.Euler(pitchDegrees, 0f, 0f);
@@ -98,7 +110,6 @@ namespace VanillaGlass
                 return;
             }
 
-            // Remove Low LOD mesh so distant glass disappears instead of showing opaque crystal
             if (low != null)
             {
                 MeshFilter lowMeshFilter = low.GetComponent<MeshFilter>();
@@ -120,11 +131,12 @@ namespace VanillaGlass
             Material mat = renderer.material;
 
             Color c = mat.color;
-            c.a = 0.15f;
+            c.a = GlassAlpha;
             mat.color = c;
 
-            // Maintain texture density
-            mat.mainTextureScale = new Vector2(3f * width, 3f * height);
+            mat.mainTextureScale = new Vector2(
+                GlassTextureScale * width,
+                GlassTextureScale * height);
 
             Logger.LogInfo($"Applied glass appearance to {piece.name}");
         }
@@ -136,8 +148,6 @@ namespace VanillaGlass
             Transform top2 = piece.transform.Find("$hud_snappoint_top 2");
             Transform bottom2 = piece.transform.Find("$hud_snappoint_bottom 2");
 
-            // Roof/skylight variants need dedicated snap coordinates.
-            // Do not rotate wall/window snap points.
             switch (pieceType)
             {
                 case GlassPieceType.Roof26:
@@ -210,8 +220,8 @@ namespace VanillaGlass
                 bottom1,
                 top2,
                 bottom2,
-                1f,
-                0f,
+                Roof26TopY,
+                Roof26BottomY,
                 "26°");
         }
 
@@ -230,8 +240,8 @@ namespace VanillaGlass
                 bottom1,
                 top2,
                 bottom2,
-                1.5f,
-                -0.5f,
+                Roof45TopY,
+                Roof45BottomY,
                 "45°");
         }
 
@@ -248,10 +258,6 @@ namespace VanillaGlass
         {
             float right = width / 2f;
             float left = -width / 2f;
-
-            // Vanilla roof pieces cover a 2x2 hole.
-            // Our glass roof pieces cover a 1x2 hole, so X is halved.
-            // Y/Z are copied or tuned from the matching vanilla roof snap layout.
 
             if (top1 != null)
             {
@@ -294,33 +300,27 @@ namespace VanillaGlass
             float front = height / 2f;
             float back = -height / 2f;
 
-            // Flat 1x2 horizontal skylight.
-            //
-            // X = width left/right
-            // Y = tuned flat height level
-            // Z = 2m length front/back
-
             if (top1 != null)
             {
-                top1.localPosition = new Vector3(right, 0.5f, back);
+                top1.localPosition = new Vector3(right, SkylightSnapY, back);
                 top1.localRotation = Quaternion.identity;
             }
 
             if (bottom1 != null)
             {
-                bottom1.localPosition = new Vector3(right, 0.5f, front);
+                bottom1.localPosition = new Vector3(right, SkylightSnapY, front);
                 bottom1.localRotation = Quaternion.identity;
             }
 
             if (top2 != null)
             {
-                top2.localPosition = new Vector3(left, 0.5f, back);
+                top2.localPosition = new Vector3(left, SkylightSnapY, back);
                 top2.localRotation = Quaternion.identity;
             }
 
             if (bottom2 != null)
             {
-                bottom2.localPosition = new Vector3(left, 0.5f, front);
+                bottom2.localPosition = new Vector3(left, SkylightSnapY, front);
                 bottom2.localRotation = Quaternion.identity;
             }
 
@@ -332,7 +332,7 @@ namespace VanillaGlass
             ItemConfig glassConfig = new ItemConfig
             {
                 Name = "Glass",
-                Description = "Crystal honed smooth and sealed with resin.",
+                Description = "Crystal, honed smooth.",
                 CraftingStation = CraftingStations.ArtisanTable,
                 Amount = 1
             };
@@ -351,7 +351,7 @@ namespace VanillaGlass
             {
                 itemDrop.m_itemData.m_shared.m_icons = new Sprite[]
                 {
-        LoadEmbeddedIcon("VanillaGlass.Assets.glass.png")
+                    LoadEmbeddedIcon("VanillaGlass.Assets.glass.png")
                 };
             }
 
