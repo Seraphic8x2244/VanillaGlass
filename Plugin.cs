@@ -419,31 +419,10 @@ namespace VanillaGlass
             Logger.LogInfo($"Hammer = {PieceTables.Hammer}");
 
             RegisterGlassPiece(
-                "piece_glass_window_1x1",
-                "Glass Window 1x1",
-                "VanillaGlass.Assets.glass_window_1x1.png",
-                1f,
-                1f);
-
-            RegisterGlassPiece(
-                "piece_glass_window_2x1",
-                "Glass Window 2x1",
-                "VanillaGlass.Assets.glass_window_2x1.png",
-                2f,
-                1f);
-
-            RegisterGlassPiece(
                 "piece_glass_window_1x2",
                 "Glass Window 1x2",
                 "VanillaGlass.Assets.glass_window_1x2.png",
                 1f,
-                2f);
-
-            RegisterGlassPiece(
-                "piece_glass_window_2x2",
-                "Glass Window 2x2",
-                "VanillaGlass.Assets.glass_window_2x2.png",
-                2f,
                 2f);
 
             RegisterGlassPiece(
