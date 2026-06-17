@@ -428,7 +428,7 @@ namespace VanillaGlass
             RegisterGlassPiece(
                 "piece_glass_roof_26_1x2",
                 "Glass Roof 26° 1x2",
-                "VanillaGlass.Assets.glass_window_1x2.png",
+                "VanillaGlass.Assets.glass_roof_26_1x2.png",
                 1f,
                 Mathf.Sqrt(5f),
                 GlassPieceType.Roof26);
@@ -436,7 +436,7 @@ namespace VanillaGlass
             RegisterGlassPiece(
                 "piece_glass_roof_45_1x2",
                 "Glass Roof 45° 1x2",
-                "VanillaGlass.Assets.glass_window_1x2.png",
+                "VanillaGlass.Assets.glass_roof_45_1x2.png",
                 1f,
                 Mathf.Sqrt(8f),
                 GlassPieceType.Roof45);
@@ -444,7 +444,7 @@ namespace VanillaGlass
             RegisterGlassPiece(
                 "piece_glass_skylight_1x2",
                 "Glass Skylight 1x2",
-                "VanillaGlass.Assets.glass_window_1x2.png",
+                "VanillaGlass.Assets.glass_skylight_1x2.png",
                 1f,
                 2f,
                 GlassPieceType.Skylight);

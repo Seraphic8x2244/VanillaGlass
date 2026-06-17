@@ -81,10 +81,10 @@
     <Folder Include="Utilities\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Assets\glass_window_1x1.png" />
+    <EmbeddedResource Include="Assets\glass_roof_26_1x2.png" />
+    <EmbeddedResource Include="Assets\glass_roof_45_1x2.png" />
+    <EmbeddedResource Include="Assets\glass_skylight_1x2.png" />
     <EmbeddedResource Include="Assets\glass_window_1x2.png" />
-    <EmbeddedResource Include="Assets\glass_window_2x1.png" />
-    <EmbeddedResource Include="Assets\glass_window_2x2.png" />
     <Content Include="icon.png" />
   </ItemGroup>
   <ItemGroup>
