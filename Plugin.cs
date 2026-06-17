@@ -15,13 +15,16 @@ namespace VanillaGlass
     {
         public const string ModGUID = "revenga.valheim.vanillaglass";
         public const string ModName = "Vanilla Glass";
-        public const string ModVersion = "0.0.9";
+        public const string ModVersion = "0.0.10";
 
         private const string GlassItemPrefabName = "VanillaGlass_Glass";
 
         private const float GlassAlpha = 0.15f;
         private const float GlassThickness = 0.15f;
         private const float GlassTextureScale = 3f;
+
+        private const float GlassItemSize = 0.5f;
+        private const float GlassItemThickness = 0.075f;
 
         private const float Roof26Pitch = -63.435f;
         private const float Roof45Pitch = -45f;
@@ -102,27 +105,24 @@ namespace VanillaGlass
                 Logger.LogInfo($"Rotated visual geometry on {piece.name} by {pitchDegrees} degrees");
             }
 
+            ApplyGlassMaterial(high, width, height);
+
+            if (low != null)
+            {
+                RemoveLowLodMesh(low, piece.name);
+            }
+
+            Logger.LogInfo($"Applied glass appearance to {piece.name}");
+        }
+
+        private void ApplyGlassMaterial(Transform high, float width, float height)
+        {
             MeshRenderer renderer = high.GetComponent<MeshRenderer>();
 
             if (renderer == null)
             {
-                Logger.LogWarning($"MeshRenderer not found on {piece.name}");
+                Logger.LogWarning($"MeshRenderer not found on {high.name}");
                 return;
-            }
-
-            if (low != null)
-            {
-                MeshFilter lowMeshFilter = low.GetComponent<MeshFilter>();
-
-                if (lowMeshFilter != null)
-                {
-                    lowMeshFilter.sharedMesh = null;
-                    Logger.LogInfo($"Removed Low LOD mesh on {piece.name}");
-                }
-                else
-                {
-                    Logger.LogWarning($"Low LOD MeshFilter not found on {piece.name}");
-                }
             }
 
             renderer.shadowCastingMode =
@@ -137,8 +137,21 @@ namespace VanillaGlass
             mat.mainTextureScale = new Vector2(
                 GlassTextureScale * width,
                 GlassTextureScale * height);
+        }
 
-            Logger.LogInfo($"Applied glass appearance to {piece.name}");
+        private void RemoveLowLodMesh(Transform low, string pieceName)
+        {
+            MeshFilter lowMeshFilter = low.GetComponent<MeshFilter>();
+
+            if (lowMeshFilter != null)
+            {
+                lowMeshFilter.sharedMesh = null;
+                Logger.LogInfo($"Removed Low LOD mesh on {pieceName}");
+            }
+            else
+            {
+                Logger.LogWarning($"Low LOD MeshFilter not found on {pieceName}");
+            }
         }
 
         private void AdjustSnapPoints(GameObject piece, float width, float height, GlassPieceType pieceType)
@@ -327,6 +340,73 @@ namespace VanillaGlass
             Logger.LogInfo($"Adjusted skylight snap points on {piece.name}");
         }
 
+        private void ReplaceGlassItemModel(GameObject itemPrefab)
+        {
+            HideChild(itemPrefab, "Cube");
+            HideChild(itemPrefab, "interior");
+            HideChild(itemPrefab, "Point light");
+
+            GameObject crystalWall = PrefabManager.Instance.GetPrefab("crystal_wall_1x1");
+
+            if (crystalWall == null)
+            {
+                Logger.LogWarning("Could not find crystal_wall_1x1 for Glass item model");
+                return;
+            }
+
+            Transform wallVisual = crystalWall.transform.Find("New");
+
+            if (wallVisual == null)
+            {
+                Logger.LogWarning("Could not find New visual object on crystal_wall_1x1");
+                return;
+            }
+
+            GameObject glassVisual = Instantiate(wallVisual.gameObject);
+            glassVisual.name = "GlassItemVisual";
+            glassVisual.transform.SetParent(itemPrefab.transform, false);
+            glassVisual.transform.localPosition = Vector3.zero;
+            glassVisual.transform.localRotation = Quaternion.identity;
+            glassVisual.transform.localScale = Vector3.one;
+
+            Transform high = glassVisual.transform.Find("High");
+            Transform low = glassVisual.transform.Find("Low");
+
+            if (high != null)
+            {
+                high.localScale = new Vector3(
+                    GlassItemSize,
+                    GlassItemSize,
+                    GlassItemThickness);
+
+                ApplyGlassMaterial(
+                    high,
+                    GlassItemSize,
+                    GlassItemSize);
+            }
+            else
+            {
+                Logger.LogWarning("High object not found on Glass item visual");
+            }
+
+            if (low != null)
+            {
+                RemoveLowLodMesh(low, "Glass item");
+            }
+
+            Logger.LogInfo("Replaced Glass item model");
+        }
+
+        private void HideChild(GameObject parent, string childName)
+        {
+            Transform child = parent.transform.Find(childName);
+
+            if (child != null)
+            {
+                child.gameObject.SetActive(false);
+            }
+        }
+
         private void RegisterGlassMaterial()
         {
             ItemConfig glassConfig = new ItemConfig
@@ -344,6 +424,8 @@ namespace VanillaGlass
                 GlassItemPrefabName,
                 "Crystal",
                 glassConfig);
+
+            ReplaceGlassItemModel(glassItem.ItemPrefab);
 
             ItemDrop itemDrop = glassItem.ItemPrefab.GetComponent<ItemDrop>();
 
