@@ -15,7 +15,7 @@ namespace VanillaGlass
     {
         public const string ModGUID = "revenga.valheim.vanillaglass";
         public const string ModName = "Vanilla Glass";
-        public const string ModVersion = "0.0.7";
+        public const string ModVersion = "0.0.8";
 
         internal static Plugin Instance;
 
@@ -25,7 +25,8 @@ namespace VanillaGlass
         {
             Window,
             Roof26,
-            Roof45
+            Roof45,
+            Skylight
         }
 
         private void Awake()
@@ -57,6 +58,8 @@ namespace VanillaGlass
                     return -63.435f;
                 case GlassPieceType.Roof45:
                     return -45f;
+                case GlassPieceType.Skylight:
+                    return -90f;
                 default:
                     return 0f;
             }
@@ -78,7 +81,7 @@ namespace VanillaGlass
             // Scale mesh and collider
             high.localScale = new Vector3(width, height, 0.15f);
 
-            // Rotate visual geometry for roof/ceiling variants
+            // Rotate visual geometry for roof/skylight variants
             if (newRoot != null && !Mathf.Approximately(pitchDegrees, 0f))
             {
                 newRoot.localRotation = Quaternion.Euler(pitchDegrees, 0f, 0f);
@@ -131,7 +134,7 @@ namespace VanillaGlass
             Transform top2 = piece.transform.Find("$hud_snappoint_top 2");
             Transform bottom2 = piece.transform.Find("$hud_snappoint_bottom 2");
 
-            // Roof/ceiling variants need dedicated roof-style snap coordinates.
+            // Roof/skylight variants need dedicated snap coordinates.
             // Do not rotate wall/window snap points.
             switch (pieceType)
             {
@@ -141,8 +144,23 @@ namespace VanillaGlass
                 case GlassPieceType.Roof45:
                     AdjustRoof45SnapPoints(piece, width, top1, bottom1, top2, bottom2);
                     return;
+                case GlassPieceType.Skylight:
+                    AdjustSkylightSnapPoints(piece, width, height, top1, bottom1, top2, bottom2);
+                    return;
             }
 
+            AdjustWindowSnapPoints(piece, width, height, top1, bottom1, top2, bottom2);
+        }
+
+        private void AdjustWindowSnapPoints(
+            GameObject piece,
+            float width,
+            float height,
+            Transform top1,
+            Transform bottom1,
+            Transform top2,
+            Transform bottom2)
+        {
             float left = -width / 2f;
             float right = width / 2f;
 
@@ -231,7 +249,7 @@ namespace VanillaGlass
 
             // Vanilla roof pieces cover a 2x2 hole.
             // Our glass roof pieces cover a 1x2 hole, so X is halved.
-            // Y/Z are copied from the matching vanilla roof snap layout.
+            // Y/Z are copied or tuned from the matching vanilla roof snap layout.
 
             if (top1 != null)
             {
@@ -258,6 +276,55 @@ namespace VanillaGlass
             }
 
             Logger.LogInfo($"Adjusted roof {roofLabel} snap points on {piece.name}");
+        }
+
+        private void AdjustSkylightSnapPoints(
+            GameObject piece,
+            float width,
+            float height,
+            Transform top1,
+            Transform bottom1,
+            Transform top2,
+            Transform bottom2)
+        {
+            float right = width / 2f;
+            float left = -width / 2f;
+            float front = height / 2f;
+            float back = -height / 2f;
+
+            // Test layout for a flat 1x2 horizontal skylight.
+            // The piece is rotated visually to horizontal, but snap points are placed
+            // directly as a flat 1x2 footprint.
+            //
+            // X = width left/right
+            // Y = flat height level
+            // Z = 2m length front/back
+
+            if (top1 != null)
+            {
+                top1.localPosition = new Vector3(right, 0.5f, back);
+                top1.localRotation = Quaternion.identity;
+            }
+
+            if (bottom1 != null)
+            {
+                bottom1.localPosition = new Vector3(right, 0.5f, front);
+                bottom1.localRotation = Quaternion.identity;
+            }
+
+            if (top2 != null)
+            {
+                top2.localPosition = new Vector3(left, 0.5f, back);
+                top2.localRotation = Quaternion.identity;
+            }
+
+            if (bottom2 != null)
+            {
+                bottom2.localPosition = new Vector3(left, 0.5f, front);
+                bottom2.localRotation = Quaternion.identity;
+            }
+
+            Logger.LogInfo($"Adjusted skylight snap points on {piece.name}");
         }
 
         private Sprite LoadEmbeddedIcon(string resourceName)
@@ -394,6 +461,14 @@ namespace VanillaGlass
                 1f,
                 Mathf.Sqrt(8f),
                 GlassPieceType.Roof45);
+
+            RegisterGlassPiece(
+                "piece_glass_skylight_1x2",
+                "Glass Skylight 1x2",
+                "VanillaGlass.Assets.glass_window_1x2.png",
+                1f,
+                2f,
+                GlassPieceType.Skylight);
         }
     }
 }
